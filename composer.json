@@ -1,0 +1,76 @@
+{
+    "name": "innoge/laravel-rclone",
+    "description": "A sleek PHP wrapper around rclone with Laravel-style fluent API syntax",
+    "keywords": [
+        "rclone",
+        "sync",
+        "backup",
+        "storage",
+        "s3",
+        "sftp",
+        "ftp",
+        "cloud",
+        "filesystem",
+        "laravel-style"
+    ],
+    "homepage": "https://github.com/innoge/rclone",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Seuffer",
+            "email": "authanram@users.noreply.github.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/process": "^10.0|^11.0|^12.0",
+        "illuminate/filesystem": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^7.0|^8.0",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^2.9|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "InnoGE\\LaravelRclone\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "InnoGE\\LaravelRclone\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "InnoGE\\LaravelRclone\\RcloneServiceProvider"
+            ],
+            "aliases": {
+                "Rclone": "InnoGE\\LaravelRclone\\Facades\\Rclone"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
