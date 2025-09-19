@@ -244,7 +244,7 @@ class RcloneManager implements RcloneInterface
 
         $result = new ProcessResult(
             $process->successful(),
-            $process->exitCode(),
+            $process->exitCode() ?? 1,
             $process->output(),
             $process->errorOutput(),
             $this->parseStats($process->errorOutput())

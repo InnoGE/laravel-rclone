@@ -6,6 +6,7 @@ parameters:
     paths:
         - src
     tmpDir: build/phpstan
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
     treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '#no value type specified in iterable type array#'
