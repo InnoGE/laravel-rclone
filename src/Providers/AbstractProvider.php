@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Providers;
 
 use Illuminate\Support\Str;
@@ -10,6 +12,7 @@ abstract class AbstractProvider implements ProviderInterface
 {
     /**
      * Build environment variables for the given disk configuration.
+     *
      * @throws InvalidConfigurationException
      */
     public function buildEnvironment(string $diskName, array $config): array
@@ -31,6 +34,7 @@ abstract class AbstractProvider implements ProviderInterface
 
     /**
      * Validate the configuration for this provider.
+     *
      * @throws InvalidConfigurationException
      */
     public function validateConfiguration(array $config): void
@@ -56,6 +60,7 @@ abstract class AbstractProvider implements ProviderInterface
 
     /**
      * Validate that required fields are present and not empty.
+     *
      * @throws InvalidConfigurationException
      */
     protected function validateRequiredFields(array $config, array $requiredFields): void
@@ -66,7 +71,6 @@ abstract class AbstractProvider implements ProviderInterface
             }
         }
     }
-
 
     /**
      * Get a configuration value with an optional default.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Support;
 
 use Illuminate\Support\Str;
@@ -33,6 +35,7 @@ final class StatsParser
     public static function parse(string $output): array
     {
         $parser = new self;
+
         return $parser->parseOutput($output);
     }
 
@@ -56,7 +59,7 @@ final class StatsParser
 
     private function extractValue(string $output, string $pattern, string $key): mixed
     {
-        if (!preg_match($pattern, $output, $matches)) {
+        if (! preg_match($pattern, $output, $matches)) {
             return null;
         }
 
@@ -97,6 +100,7 @@ final class StatsParser
         }
 
         $errors = $stats['errors'] ?? 0;
+
         return round((($total - $errors) / $total) * 100, 2);
     }
 

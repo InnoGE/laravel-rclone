@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Exceptions;
 
 class ProviderNotFoundException extends RcloneException

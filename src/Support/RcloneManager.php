@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Support;
 
 use Closure;
@@ -39,8 +41,7 @@ class RcloneManager implements RcloneInterface
         array $filesystemDisks = [],
         ?ProviderRegistry $providerRegistry = null,
         ?LoggerInterface $logger = null
-    )
-    {
+    ) {
         $this->config = array_merge([
             'binary_path' => null,
             'timeout' => 3600,
@@ -183,7 +184,6 @@ class RcloneManager implements RcloneInterface
         return $this->executeCommand('sync');
     }
 
-
     /**
      * @throws InvalidConfigurationException
      * @throws CommandExecutionException
@@ -220,8 +220,8 @@ class RcloneManager implements RcloneInterface
 
         $this->logger->info('Starting rclone operation', [
             'operation' => $operation,
-            'source' => $this->sourceDisk . ':' . $this->sourcePath,
-            'target' => $this->targetDisk . ':' . $this->targetPath,
+            'source' => $this->sourceDisk.':'.$this->sourcePath,
+            'target' => $this->targetDisk.':'.$this->targetPath,
             'timeout' => $this->config['timeout'],
         ]);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Support;
 
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
@@ -32,6 +34,7 @@ final class RcloneCommandBuilder
     public function addBaseOptions(array $baseOptions): self
     {
         $this->command = array_merge($this->command, $baseOptions);
+
         return $this;
     }
 
@@ -44,9 +47,10 @@ final class RcloneCommandBuilder
             return $this->addProgressOption($value);
         }
 
-        if (!isset(self::OPTION_MAPPING[$key])) {
+        if (! isset(self::OPTION_MAPPING[$key])) {
             // Custom options are added as-is
             $this->options[$key] = $value;
+
             return $this;
         }
 
@@ -54,6 +58,7 @@ final class RcloneCommandBuilder
         $this->validateOptionValue($key, $value, $config);
 
         $this->command[] = sprintf($config['template'], $value);
+
         return $this;
     }
 
@@ -62,6 +67,7 @@ final class RcloneCommandBuilder
         if ($enabled) {
             $this->command[] = '--progress';
         }
+
         return $this;
     }
 
@@ -69,6 +75,7 @@ final class RcloneCommandBuilder
     {
         $this->command[] = $source;
         $this->command[] = $target;
+
         return $this;
     }
 
@@ -95,7 +102,7 @@ final class RcloneCommandBuilder
      */
     private function validateOptionValue(string $key, mixed $value, array $config): void
     {
-        if (!is_int($value)) {
+        if (! is_int($value)) {
             throw InvalidConfigurationException::invalidValue($key, $value, 'integer');
         }
 

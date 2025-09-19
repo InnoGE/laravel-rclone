@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Exceptions;
 
 class InvalidConfigurationException extends RcloneException
@@ -12,6 +14,7 @@ class InvalidConfigurationException extends RcloneException
     public static function invalidValue(string $field, mixed $value, string $expected): self
     {
         $actualType = get_debug_type($value);
+
         return new self("Invalid value for '{$field}': got {$actualType}, expected {$expected}");
     }
 

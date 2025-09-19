@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace InnoGE\LaravelRclone\Providers;
 
-use Illuminate\Support\Str;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 
 class S3Provider extends AbstractProvider

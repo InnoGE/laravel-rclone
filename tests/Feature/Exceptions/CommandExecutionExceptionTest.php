@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use InnoGE\LaravelRclone\Exceptions\CommandExecutionException;
 
 test('can create binary not found exception', function () {
