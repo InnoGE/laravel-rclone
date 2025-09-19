@@ -67,30 +67,6 @@ abstract class AbstractProvider implements ProviderInterface
         }
     }
 
-    /**
-     * Validate that a field is a positive integer within bounds.
-     * @throws InvalidConfigurationException
-     */
-    protected function validateIntegerField(array $config, string $field, int $min = 1, int $max = PHP_INT_MAX): void
-    {
-        if (!isset($config[$field])) {
-            return;
-        }
-
-        $value = $config[$field];
-
-        if (!is_int($value)) {
-            throw InvalidConfigurationException::invalidValue($field, $value, 'integer');
-        }
-
-        if ($value < $min || $value > $max) {
-            throw InvalidConfigurationException::invalidValue(
-                $field,
-                $value,
-                "integer between {$min} and {$max}"
-            );
-        }
-    }
 
     /**
      * Get a configuration value with an optional default.

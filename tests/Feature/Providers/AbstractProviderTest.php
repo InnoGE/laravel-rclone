@@ -3,37 +3,6 @@
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
-    test('validateIntegerField method works correctly', function () {
-        $provider = new class extends AbstractProvider {
-            public function getDriver(): string { return 'test'; }
-            protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array {
-                return [];
-            }
-            public function testValidateIntegerField(array $config, string $field, int $min = 1, int $max = PHP_INT_MAX): void {
-                $this->validateIntegerField($config, $field, $min, $max);
-            }
-        };
-
-        // Test with valid integer
-        $provider->testValidateIntegerField(['port' => 22], 'port', 1, 65535);
-        expect(true)->toBeTrue(); // Should not throw
-
-        // Test with invalid type
-        expect(fn () => $provider->testValidateIntegerField(['port' => 'not-int'], 'port'))
-            ->toThrow(InvalidConfigurationException::class, 'integer');
-
-        // Test below minimum
-        expect(fn () => $provider->testValidateIntegerField(['port' => 0], 'port', 1, 65535))
-            ->toThrow(InvalidConfigurationException::class, 'between 1 and 65535');
-
-        // Test above maximum
-        expect(fn () => $provider->testValidateIntegerField(['port' => 70000], 'port', 1, 65535))
-            ->toThrow(InvalidConfigurationException::class, 'between 1 and 65535');
-
-        // Test with missing field (should not throw)
-        $provider->testValidateIntegerField([], 'missing_field');
-        expect(true)->toBeTrue();
-    });
 
     test('validateRequiredFields method works correctly', function () {
         $provider = new class extends AbstractProvider {
