@@ -2,7 +2,6 @@
 
 use InnoGE\LaravelRclone\Support\ProcessResult;
 
-describe('ProcessResult Complete Coverage', function () {
     test('all getter methods return correct values', function () {
         $stats = [
             'transferred_files' => 100,
@@ -84,4 +83,3 @@ describe('ProcessResult Complete Coverage', function () {
         expect($result->errorOutput)->toBe('test error');
         expect($result->stats)->toBe($stats);
     });
-});

@@ -3,7 +3,6 @@
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\SftpProvider;
 
-describe('SftpProvider Validation', function () {
     test('validates required host field', function () {
         $provider = new SftpProvider();
 
@@ -177,4 +176,35 @@ describe('SftpProvider Validation', function () {
         expect(true)->toBeTrue();
     });
 
-});
+    test('validates hostname throws exception for invalid format', function () {
+        $provider = new SftpProvider();
+
+        try {
+            $provider->validateConfiguration([
+                'driver' => 'sftp',
+                'host' => 'invalid..hostname..format', // Invalid format
+                'username' => 'testuser',
+                'password' => 'testpass'
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('host');
+        }
+    });
+
+    test('validates authentication throws exception when missing all methods', function () {
+        $provider = new SftpProvider();
+
+        try {
+            $provider->validateConfiguration([
+                'driver' => 'sftp',
+                'host' => 'test.com',
+                'username' => 'testuser'
+                // Missing password, key_file, and private_key
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('authentication required');
+        }
+    });
+

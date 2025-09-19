@@ -3,7 +3,6 @@
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\S3Provider;
 
-describe('S3Provider Validation', function () {
     test('validates all required fields are present', function () {
         $provider = new S3Provider();
 
@@ -151,4 +150,66 @@ describe('S3Provider Validation', function () {
         expect(true)->toBeTrue();
     });
 
-});
+    test('validates region format throws exception for invalid characters', function () {
+        $provider = new S3Provider();
+
+        try {
+            $provider->validateConfiguration([
+                'driver' => 's3',
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+                'region' => 'INVALID_REGION!', // Invalid uppercase and special chars
+                'bucket' => 'test-bucket'
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('region');
+        }
+    });
+
+    test('validates bucket name format throws exception for invalid patterns', function () {
+        $provider = new S3Provider();
+
+        // Test consecutive dots
+        try {
+            $provider->validateConfiguration([
+                'driver' => 's3',
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+                'region' => 'us-east-1',
+                'bucket' => 'bucket..name'
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('bucket');
+        }
+
+        // Test starting with dot
+        try {
+            $provider->validateConfiguration([
+                'driver' => 's3',
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+                'region' => 'us-east-1',
+                'bucket' => '.invalid'
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('bucket');
+        }
+
+        // Test ending with dot
+        try {
+            $provider->validateConfiguration([
+                'driver' => 's3',
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+                'region' => 'us-east-1',
+                'bucket' => 'invalid.'
+            ]);
+            expect(false)->toBeTrue(); // Should not reach here
+        } catch (InvalidConfigurationException $e) {
+            expect($e->getMessage())->toContain('bucket');
+        }
+    });
+

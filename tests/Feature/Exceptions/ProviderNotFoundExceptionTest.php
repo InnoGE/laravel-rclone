@@ -2,7 +2,6 @@
 
 use InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException;
 
-describe('ProviderNotFoundException Static Methods', function () {
     test('can create for driver exception', function () {
         $exception = ProviderNotFoundException::forDriver('unknown');
 
@@ -17,4 +16,3 @@ describe('ProviderNotFoundException Static Methods', function () {
         expect($exception1->getMessage())->toBe('No provider found for driver: custom-driver');
         expect($exception2->getMessage())->toBe('No provider found for driver: missing-provider');
     });
-});

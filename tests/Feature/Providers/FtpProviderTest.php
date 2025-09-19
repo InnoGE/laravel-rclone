@@ -2,7 +2,6 @@
 
 use InnoGE\LaravelRclone\Providers\FtpProvider;
 
-describe('FtpProvider Coverage', function () {
     test('builds environment variables correctly', function () {
         $provider = new FtpProvider();
 
@@ -44,4 +43,3 @@ describe('FtpProvider Coverage', function () {
 
         expect($provider->getDriver())->toBe('ftp');
     });
-});

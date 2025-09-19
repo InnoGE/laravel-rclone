@@ -14,6 +14,7 @@ final class RcloneCommandBuilder
     ];
 
     private array $command = [];
+
     private array $options = [];
 
     public function __construct(
@@ -34,6 +35,9 @@ final class RcloneCommandBuilder
         return $this;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function addOption(string $key, mixed $value): self
     {
         if ($key === 'progress') {
@@ -70,9 +74,25 @@ final class RcloneCommandBuilder
 
     public function build(): array
     {
-        return $this->command;
+        $command = $this->command;
+
+        // Add custom options
+        foreach ($this->options as $key => $value) {
+            if (is_bool($value)) {
+                if ($value) {
+                    $command[] = "--{$key}";
+                }
+            } elseif (is_string($value) || is_numeric($value)) {
+                $command[] = "--{$key}={$value}";
+            }
+        }
+
+        return $command;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     private function validateOptionValue(string $key, mixed $value, array $config): void
     {
         if (!is_int($value)) {

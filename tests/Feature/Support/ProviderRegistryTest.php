@@ -5,7 +5,6 @@ use InnoGE\LaravelRclone\Providers\LocalProvider;
 use InnoGE\LaravelRclone\Providers\S3Provider;
 use InnoGE\LaravelRclone\Support\ProviderRegistry;
 
-describe('ProviderRegistry Complete Coverage', function () {
     test('can register and retrieve providers', function () {
         $registry = new ProviderRegistry();
         $localProvider = new LocalProvider();
@@ -80,4 +79,3 @@ describe('ProviderRegistry Complete Coverage', function () {
         expect($registry->getSupportedDrivers())->toBeEmpty();
         expect($registry->hasProvider('any'))->toBeFalse();
     });
-});

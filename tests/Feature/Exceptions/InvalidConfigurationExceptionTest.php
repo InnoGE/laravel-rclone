@@ -2,7 +2,6 @@
 
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 
-describe('InvalidConfigurationException Static Methods', function () {
     test('can create missing field exception', function () {
         $exception = InvalidConfigurationException::missingField('s3', 'bucket');
 
@@ -38,4 +37,3 @@ describe('InvalidConfigurationException Static Methods', function () {
         expect($exception)->toBeInstanceOf(InvalidConfigurationException::class);
         expect($exception->getMessage())->toBe("Driver mismatch: expected 's3', got 'local'");
     });
-});

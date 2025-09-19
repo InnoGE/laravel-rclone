@@ -174,6 +174,7 @@ class RcloneManager implements RcloneInterface
     }
 
     /**
+     * @throws InvalidConfigurationException
      * @throws CommandExecutionException
      * @throws ProviderNotFoundException
      */
@@ -182,7 +183,9 @@ class RcloneManager implements RcloneInterface
         return $this->executeCommand('sync');
     }
 
+
     /**
+     * @throws InvalidConfigurationException
      * @throws CommandExecutionException
      * @throws ProviderNotFoundException
      */
@@ -194,6 +197,7 @@ class RcloneManager implements RcloneInterface
     /**
      * @throws CommandExecutionException
      * @throws ProviderNotFoundException
+     * @throws InvalidConfigurationException
      */
     public function move(): ProcessResult
     {
@@ -201,6 +205,7 @@ class RcloneManager implements RcloneInterface
     }
 
     /**
+     * @throws InvalidConfigurationException
      * @throws CommandExecutionException
      * @throws ProviderNotFoundException
      */
@@ -227,13 +232,12 @@ class RcloneManager implements RcloneInterface
                 if ($this->outputCallback) {
                     ($this->outputCallback)($type, $buffer);
                 }
-                // @codeCoverageIgnoreEnd
-
                 // Log process output for debugging
                 $this->logger->debug('rclone process output', [
                     'type' => $type,
                     'buffer' => Str::trim($buffer),
                 ]);
+                // @codeCoverageIgnoreEnd
             });
 
         $executionTime = round((microtime(true) - $startTime) * 1000, 2);
@@ -266,6 +270,7 @@ class RcloneManager implements RcloneInterface
 
     /**
      * @throws CommandExecutionException
+     * @throws InvalidConfigurationException
      */
     protected function buildCommand(string $operation): array
     {

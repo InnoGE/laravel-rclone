@@ -3,7 +3,6 @@
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
-describe('AbstractProvider Base Functionality', function () {
     test('validateIntegerField method works correctly', function () {
         $provider = new class extends AbstractProvider {
             public function getDriver(): string { return 'test'; }
@@ -150,4 +149,3 @@ describe('AbstractProvider Base Functionality', function () {
         expect(fn () => $provider->validateConfiguration([]))
             ->toThrow(InvalidConfigurationException::class);
     });
-});

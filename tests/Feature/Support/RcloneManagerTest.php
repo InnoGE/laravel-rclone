@@ -17,8 +17,7 @@ beforeEach(function () {
     ]);
 });
 
-describe('Laravel Integration', function () {
-    test('rclone service is registered in container', function () {
+test('rclone service is registered in container', function () {
         expect(app()->bound(RcloneInterface::class))->toBeTrue();
         expect(app()->bound('rclone'))->toBeTrue();
     });
@@ -35,9 +34,7 @@ describe('Laravel Integration', function () {
 
         expect($facade)->toBeInstanceOf(RcloneInterface::class);
     });
-});
 
-describe('Basic Operations', function () {
     test('can perform sync operation', function () {
         $result = Rclone::source('local_test', '/source')
             ->target('s3_test', '/target')
@@ -62,9 +59,6 @@ describe('Basic Operations', function () {
 
         expect($result->isSuccessful())->toBeTrue();
     });
-});
-
-describe('Fluent API', function () {
     test('can chain configuration methods', function () {
         $manager = Rclone::source('local_test', '/source')
             ->target('s3_test', '/target')
@@ -89,9 +83,7 @@ describe('Fluent API', function () {
 
         expect($result->isSuccessful())->toBeTrue();
     });
-});
 
-describe('Input Validation', function () {
     test('validates transfers parameter bounds', function () {
         expect(fn () => Rclone::transfers(0))
             ->toThrow(InvalidConfigurationException::class);
@@ -127,9 +119,7 @@ describe('Input Validation', function () {
         expect(fn () => Rclone::statInterval(3601))
             ->toThrow(InvalidConfigurationException::class);
     });
-});
 
-describe('Error Handling', function () {
     test('throws exception when source disk is not set', function () {
         expect(fn () => Rclone::target('s3_test', '/target')->sync())
             ->toThrow(CommandExecutionException::class, 'Source disk is required');
@@ -157,9 +147,7 @@ describe('Error Handling', function () {
         expect($result->getExitCode())->toBe(1);
         expect($result->getErrorOutput())->toContain('file not found');
     });
-});
 
-describe('Output Handling', function () {
     test('can capture process output with callback', function () {
         $outputReceived = [];
 
@@ -197,9 +185,7 @@ describe('Output Handling', function () {
         expect($stats['transferred_files'])->toBeGreaterThanOrEqual(0);
         expect($stats['elapsed_time'])->toBeGreaterThanOrEqual(0);
     });
-});
 
-describe('Provider Configuration', function () {
     test('works with different filesystem configurations', function () {
         config([
             'filesystems.disks.local_test' => [
@@ -236,9 +222,7 @@ describe('Provider Configuration', function () {
                 ->sync()
         )->toThrow(InvalidConfigurationException::class);
     });
-});
 
-describe('Binary Resolution', function () {
     test('uses custom binary path when configured', function () {
         config(['rclone.binary_path' => '/custom/path/to/rclone']);
 
@@ -248,9 +232,7 @@ describe('Binary Resolution', function () {
 
         expect($result->isSuccessful())->toBeTrue();
     });
-});
 
-describe('Advanced Features', function () {
     test('supports complex real-world scenarios', function () {
         // Simulate a real backup scenario
         $result = Rclone::source('local_test', '/var/www/uploads')
@@ -293,5 +275,25 @@ describe('Advanced Features', function () {
         expect($stats['success_rate'])->toBeGreaterThan(80);
     });
 
+    test('logs process output during operation', function () {
+        $logger = Mockery::mock(\Psr\Log\LoggerInterface::class);
+        $logger->shouldReceive('info')->twice(); // Start and success log
+        $logger->shouldReceive('debug')->atLeast()->once(); // At least one debug call
 
-});
+        $manager = new \InnoGE\LaravelRclone\Support\RcloneManager(
+            ['binary_path' => 'echo'],
+            ['local' => ['driver' => 'local', 'root' => '/tmp']],
+            app(\InnoGE\LaravelRclone\Support\ProviderRegistry::class),
+            $logger
+        );
+
+        \Illuminate\Support\Facades\Process::fake([
+            'echo *' => \Illuminate\Support\Facades\Process::result('output', 'error_output'),
+        ]);
+
+        $result = $manager->source('local', '/test')->target('local', '/test2')->copy();
+
+        expect($result->isSuccessful())->toBeTrue();
+    });
+
+

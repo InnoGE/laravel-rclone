@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Facades\Rclone;
 
-describe('Stats Parsing', function () {
     test('parses basic rclone statistics correctly', function () {
         Process::fake([
             '*' => Process::result(
@@ -136,9 +135,7 @@ describe('Stats Parsing', function () {
         expect($stats['transfer_speed_mbps'])->toBe(0.0);
         expect($stats['success_rate'])->toBe(100.0);
     });
-});
 
-describe('ProcessResult', function () {
     test('provides comprehensive result information', function () {
         Process::fake([
             '*' => Process::result(
@@ -210,4 +207,3 @@ describe('ProcessResult', function () {
         // Non-existent stat should return default
         expect($result->getStatValue('non_existent', 999))->toBe(999);
     });
-});

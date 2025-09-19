@@ -2,8 +2,6 @@
 
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Support\RcloneCommandBuilder;
-
-describe('RcloneCommandBuilder Complete Coverage', function () {
     test('can create builder with create static method', function () {
         $builder = RcloneCommandBuilder::create('/usr/bin/rclone', 'sync');
 
@@ -105,11 +103,16 @@ describe('RcloneCommandBuilder Complete Coverage', function () {
     test('handles custom options correctly', function () {
         $builder = RcloneCommandBuilder::create('/usr/bin/rclone', 'sync');
 
-        // Custom options should be added as-is (not validated)
+        // Custom options should be added to the command
         $builder->addOption('custom_option', 'custom_value');
+        $builder->addOption('dry_run', true);
+        $builder->addOption('disabled_flag', false);
 
         $command = $builder->build();
-        expect($command)->toBe(['/usr/bin/rclone', 'sync']);
+
+        expect($command)->toContain('--custom_option=custom_value');
+        expect($command)->toContain('--dry_run');
+        expect($command)->not->toContain('--disabled_flag');
 
         expect(true)->toBeTrue(); // Should not throw
     });
@@ -140,4 +143,3 @@ describe('RcloneCommandBuilder Complete Coverage', function () {
             's3:target'
         ]);
     });
-});
