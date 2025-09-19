@@ -214,7 +214,11 @@ class RcloneManager implements RcloneInterface
         $this->validateConfiguration();
 
         $command = $this->buildCommand($operation);
-        $environment = $this->buildEnvironment();
+
+        $environment = array_merge($this->buildEnvironment(), [
+            'RCLONE_CONFIG_S3_PROVIDER' => 'Other',
+            'RCLONE_CONFIG_BACKUP_PROVIDER' => 'Other',
+        ]);
 
         $startTime = microtime(true);
 

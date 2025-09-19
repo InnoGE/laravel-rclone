@@ -13,7 +13,7 @@
         "filesystem",
         "laravel-style"
     ],
-    "homepage": "https://github.com/innoge/rclone",
+    "homepage": "https://github.com/innoge/laravel-rclone",
     "license": "MIT",
     "authors": [
         {

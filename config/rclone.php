@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -35,9 +33,13 @@ return [
     |
     */
     'base_options' => [
+        '--config=/dev/null',
         '--delete-after',
         '--fast-list',
         '--checksum',
+//        '--s3-chunk-size=64M',
+//        '--s3-upload-concurrency=16',
+//        '--low-level-retries=10',
     ],
 
     /*
@@ -49,10 +51,10 @@ return [
     |
     */
     'defaults' => [
-        'transfers' => 4,
+        'transfers' => 16,
         'checkers' => 8,
         'retries' => 3,
         'stat_interval' => 1,
-        'progress' => false,
+        'progress' => true,
     ],
 ];
