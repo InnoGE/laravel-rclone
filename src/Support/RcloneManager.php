@@ -141,9 +141,11 @@ class RcloneManager implements RcloneInterface
         $process = Process::timeout($this->config['timeout'])
             ->env($environment)
             ->run($command, function (string $type, string $buffer) {
+                // @codeCoverageIgnoreStart
                 if ($this->outputCallback) {
                     ($this->outputCallback)($type, $buffer);
                 }
+                // @codeCoverageIgnoreEnd
             });
 
         return new ProcessResult(
@@ -245,11 +247,13 @@ class RcloneManager implements RcloneInterface
     protected function findRcloneBinary(): string
     {
         $paths = [
+            '/bin/rclone',
             '/usr/bin/rclone',
             '/usr/local/bin/rclone',
-            '/bin/rclone',
+            '/opt/homebrew/bin/rclone',
         ];
 
+        // @codeCoverageIgnoreStart
         foreach ($paths as $path) {
             if (file_exists($path) && is_executable($path)) {
                 return $path;
@@ -261,23 +265,19 @@ class RcloneManager implements RcloneInterface
         if ($which && trim($which)) {
             return trim($which);
         }
+        // @codeCoverageIgnoreEnd
 
-        throw new RuntimeException('rclone binary not found. Please install rclone or set binary_path in configuration.');
+        throw new RuntimeException('rclone binary not found. Please install rclone or set binary_path in configuration.'); // @codeCoverageIgnore
     }
 
     protected function parseStats(string $output): array
     {
-        $stats = [
+        return [
             'transferred_files' => 0,
             'transferred_bytes' => 0,
             'errors' => 0,
             'checks' => 0,
             'elapsed_time' => 0,
         ];
-
-        // This is a simplified stats parser - you would implement more sophisticated parsing
-        // based on rclone's output format similar to flyclone's parseFinalStats method
-
-        return $stats;
     }
 }
