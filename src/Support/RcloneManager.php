@@ -5,7 +5,6 @@ namespace InnoGE\LaravelRclone\Support;
 use Closure;
 use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
-use InvalidArgumentException;
 use RuntimeException;
 
 class RcloneManager implements RcloneInterface
@@ -13,6 +12,8 @@ class RcloneManager implements RcloneInterface
     protected array $config;
 
     protected array $filesystemDisks;
+
+    protected ProviderRegistry $providerRegistry;
 
     protected string $sourceDisk = '';
 
@@ -26,7 +27,7 @@ class RcloneManager implements RcloneInterface
 
     protected ?Closure $outputCallback = null;
 
-    public function __construct(array $config = [], array $filesystemDisks = [])
+    public function __construct(array $config = [], array $filesystemDisks = [], ?ProviderRegistry $providerRegistry = null)
     {
         $this->config = array_merge([
             'binary_path' => null,
@@ -47,6 +48,7 @@ class RcloneManager implements RcloneInterface
 
         $this->filesystemDisks = $filesystemDisks;
         $this->options = $this->config['defaults'];
+        $this->providerRegistry = $providerRegistry ?? new ProviderRegistry;
     }
 
     public function source(string $disk, string $path = '/'): self
@@ -213,53 +215,10 @@ class RcloneManager implements RcloneInterface
 
     protected function buildDiskEnvironment(string $diskName, array $config): array
     {
-        $env = [];
-        $upperDiskName = strtoupper($diskName);
         $driver = $config['driver'] ?? 'local';
+        $provider = $this->providerRegistry->getProvider($driver);
 
-        switch ($driver) {
-            case 'local':
-                $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = 'local';
-                $env["RCLONE_CONFIG_{$upperDiskName}_ROOT"] = $config['root'] ?? '/';
-                break;
-
-            case 's3':
-                $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = 's3';
-                $env["RCLONE_CONFIG_{$upperDiskName}_ACCESS_KEY_ID"] = $config['key'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_SECRET_ACCESS_KEY"] = $config['secret'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_REGION"] = $config['region'] ?? 'us-east-1';
-                $env["RCLONE_CONFIG_{$upperDiskName}_BUCKET"] = $config['bucket'] ?? '';
-
-                if (isset($config['endpoint'])) {
-                    $env["RCLONE_CONFIG_{$upperDiskName}_ENDPOINT"] = $config['endpoint'];
-                }
-
-                if (isset($config['use_path_style_endpoint'])) {
-                    $env["RCLONE_CONFIG_{$upperDiskName}_FORCE_PATH_STYLE"] = $config['use_path_style_endpoint'] ? 'true' : 'false';
-                }
-                break;
-
-            case 'sftp':
-                $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = 'sftp';
-                $env["RCLONE_CONFIG_{$upperDiskName}_HOST"] = $config['host'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_USER"] = $config['username'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_PASS"] = $config['password'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_PORT"] = (string) ($config['port'] ?? 22);
-                break;
-
-            case 'ftp':
-                $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = 'ftp';
-                $env["RCLONE_CONFIG_{$upperDiskName}_HOST"] = $config['host'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_USER"] = $config['username'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_PASS"] = $config['password'] ?? '';
-                $env["RCLONE_CONFIG_{$upperDiskName}_PORT"] = (string) ($config['port'] ?? 21);
-                break;
-
-            default:
-                throw new InvalidArgumentException("Unsupported driver: {$driver}");
-        }
-
-        return $env;
+        return $provider->buildEnvironment($diskName, $config);
     }
 
     protected function buildDiskPath(string $diskName, string $path): string

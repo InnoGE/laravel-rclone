@@ -4,6 +4,11 @@ namespace InnoGE\LaravelRclone;
 
 use Illuminate\Support\ServiceProvider;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
+use InnoGE\LaravelRclone\Providers\FtpProvider;
+use InnoGE\LaravelRclone\Providers\LocalProvider;
+use InnoGE\LaravelRclone\Providers\S3Provider;
+use InnoGE\LaravelRclone\Providers\SftpProvider;
+use InnoGE\LaravelRclone\Support\ProviderRegistry;
 use InnoGE\LaravelRclone\Support\RcloneManager;
 
 class RcloneServiceProvider extends ServiceProvider
@@ -15,10 +20,23 @@ class RcloneServiceProvider extends ServiceProvider
             'rclone'
         );
 
+        $this->app->singleton(ProviderRegistry::class, function () {
+            $registry = new ProviderRegistry;
+
+            // Register default providers
+            $registry->register(new LocalProvider);
+            $registry->register(new S3Provider);
+            $registry->register(new SftpProvider);
+            $registry->register(new FtpProvider);
+
+            return $registry;
+        });
+
         $this->app->singleton(RcloneInterface::class, function ($app) {
             return new RcloneManager(
                 $app['config']->get('rclone', []),
-                $app['config']->get('filesystems.disks', [])
+                $app['config']->get('filesystems.disks', []),
+                $app->make(ProviderRegistry::class)
             );
         });
 

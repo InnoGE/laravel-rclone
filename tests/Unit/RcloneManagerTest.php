@@ -1,6 +1,8 @@
 <?php
 
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
+use InnoGE\LaravelRclone\Providers\S3Provider;
+use InnoGE\LaravelRclone\Support\ProviderRegistry;
 use InnoGE\LaravelRclone\Support\RcloneManager;
 
 it('implements rclone interface', function () {
@@ -110,7 +112,10 @@ it('throws exception when target disk is not set', function () {
 });
 
 it('uses Laravel filesystem configuration', function () {
-    $manager = new class([], config('filesystems.disks')) extends RcloneManager
+    $registry = new ProviderRegistry;
+    $registry->register(new S3Provider);
+
+    $manager = new class([], config('filesystems.disks'), $registry) extends RcloneManager
     {
         public function testBuildEnvironment(): array
         {
