@@ -258,6 +258,14 @@ composer format
 
 Contributions welcome! Please submit issues and pull requests on [GitHub](https://github.com/innoge/laravel-rclone).
 
+## 💝 Built With Love
+
+This package was crafted with passion by amazing developers:
+
+- [Daniel Seuffer](https://github.com/authanram) - Creator & Maintainer
+- [Tim Geisendoerfer](https://github.com/geisi) - Inspiring Leader, Core Contributor
+- [All Contributors](../../contributors) - Community Heroes ❤️
+
 ## 📄 License
 
 MIT License. See [LICENSE](LICENSE.md) for details.
