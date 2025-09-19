@@ -3,7 +3,7 @@
 namespace InnoGE\LaravelRclone\Support;
 
 use InnoGE\LaravelRclone\Contracts\ProviderInterface;
-use InvalidArgumentException;
+use InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException;
 
 class ProviderRegistry
 {
@@ -26,7 +26,7 @@ class ProviderRegistry
     public function getProvider(string $driver): ProviderInterface
     {
         if (! isset($this->providers[$driver])) {
-            throw new InvalidArgumentException("Unsupported driver: {$driver}");
+            throw ProviderNotFoundException::forDriver($driver);
         }
 
         return $this->providers[$driver];

@@ -2,11 +2,46 @@
 
 namespace InnoGE\LaravelRclone\Providers;
 
+use Illuminate\Support\Str;
+use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
+
 class S3Provider extends AbstractProvider
 {
     public function getDriver(): string
     {
         return 's3';
+    }
+
+    /**
+     * @throws InvalidConfigurationException
+     */
+    protected function validateProviderSpecificConfiguration(array $config): void
+    {
+        $this->validateRequiredFields($config, ['key', 'secret', 'region', 'bucket']);
+
+        // Validate region format
+        if (isset($config['region']) && !preg_match('/^[a-z0-9\-]+$/', $config['region'])) {
+            throw InvalidConfigurationException::invalidValue(
+                'region',
+                $config['region'],
+                'valid AWS region (e.g., us-east-1)'
+            );
+        }
+
+        // Validate bucket name format (simplified AWS rules)
+        if (isset($config['bucket'])) {
+            $bucket = $config['bucket'];
+            if (!preg_match('/^[a-z0-9.-]{3,63}$/', $bucket) ||
+                Str::contains($bucket, '..') ||
+                Str::startsWith($bucket, '.') ||
+                Str::endsWith($bucket, '.')) {
+                throw InvalidConfigurationException::invalidValue(
+                    'bucket',
+                    $bucket,
+                    'valid S3 bucket name'
+                );
+            }
+        }
     }
 
     protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array

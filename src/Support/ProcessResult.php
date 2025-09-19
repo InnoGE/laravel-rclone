@@ -56,4 +56,9 @@ class ProcessResult
     {
         return $this->stats['errors'] ?? 0;
     }
+
+    public function getStatValue(string $key, mixed $default = 0): mixed
+    {
+        return $this->stats[$key] ?? $default;
+    }
 }

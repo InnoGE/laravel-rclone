@@ -3,9 +3,14 @@
 namespace InnoGE\LaravelRclone\Support;
 
 use Closure;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
-use RuntimeException;
+use InnoGE\LaravelRclone\Exceptions\CommandExecutionException;
+use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
+use InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException;
+use Psr\Log\LoggerInterface;
 
 class RcloneManager implements RcloneInterface
 {
@@ -14,6 +19,8 @@ class RcloneManager implements RcloneInterface
     protected array $filesystemDisks;
 
     protected ProviderRegistry $providerRegistry;
+
+    protected LoggerInterface $logger;
 
     protected string $sourceDisk = '';
 
@@ -27,7 +34,12 @@ class RcloneManager implements RcloneInterface
 
     protected ?Closure $outputCallback = null;
 
-    public function __construct(array $config = [], array $filesystemDisks = [], ?ProviderRegistry $providerRegistry = null)
+    public function __construct(
+        array $config = [],
+        array $filesystemDisks = [],
+        ?ProviderRegistry $providerRegistry = null,
+        ?LoggerInterface $logger = null
+    )
     {
         $this->config = array_merge([
             'binary_path' => null,
@@ -49,6 +61,7 @@ class RcloneManager implements RcloneInterface
         $this->filesystemDisks = $filesystemDisks;
         $this->options = $this->config['defaults'];
         $this->providerRegistry = $providerRegistry ?? new ProviderRegistry;
+        $this->logger = $logger ?? Log::getFacadeRoot();
     }
 
     public function source(string $disk, string $path = '/'): self
@@ -74,29 +87,73 @@ class RcloneManager implements RcloneInterface
         return $this;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function transfers(int $transfers): self
     {
+        if ($transfers < 1 || $transfers > 100) {
+            throw InvalidConfigurationException::invalidValue(
+                'transfers',
+                $transfers,
+                'integer between 1 and 100'
+            );
+        }
+
         $this->options['transfers'] = $transfers;
 
         return $this;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function checkers(int $checkers): self
     {
+        if ($checkers < 1 || $checkers > 100) {
+            throw InvalidConfigurationException::invalidValue(
+                'checkers',
+                $checkers,
+                'integer between 1 and 100'
+            );
+        }
+
         $this->options['checkers'] = $checkers;
 
         return $this;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function retries(int $retries): self
     {
+        if ($retries < 0 || $retries > 10) {
+            throw InvalidConfigurationException::invalidValue(
+                'retries',
+                $retries,
+                'integer between 0 and 10'
+            );
+        }
+
         $this->options['retries'] = $retries;
 
         return $this;
     }
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function statInterval(int $seconds): self
     {
+        if ($seconds < 1 || $seconds > 3600) {
+            throw InvalidConfigurationException::invalidValue(
+                'stat_interval',
+                $seconds,
+                'integer between 1 and 3600 seconds'
+            );
+        }
+
         $this->options['stat_interval'] = $seconds;
 
         return $this;
@@ -116,27 +173,52 @@ class RcloneManager implements RcloneInterface
         return $this;
     }
 
+    /**
+     * @throws CommandExecutionException
+     * @throws ProviderNotFoundException
+     */
     public function sync(): ProcessResult
     {
         return $this->executeCommand('sync');
     }
 
+    /**
+     * @throws CommandExecutionException
+     * @throws ProviderNotFoundException
+     */
     public function copy(): ProcessResult
     {
         return $this->executeCommand('copy');
     }
 
+    /**
+     * @throws CommandExecutionException
+     * @throws ProviderNotFoundException
+     */
     public function move(): ProcessResult
     {
         return $this->executeCommand('move');
     }
 
+    /**
+     * @throws CommandExecutionException
+     * @throws ProviderNotFoundException
+     */
     protected function executeCommand(string $operation): ProcessResult
     {
         $this->validateConfiguration();
 
         $command = $this->buildCommand($operation);
         $environment = $this->buildEnvironment();
+
+        $startTime = microtime(true);
+
+        $this->logger->info('Starting rclone operation', [
+            'operation' => $operation,
+            'source' => $this->sourceDisk . ':' . $this->sourcePath,
+            'target' => $this->targetDisk . ':' . $this->targetPath,
+            'timeout' => $this->config['timeout'],
+        ]);
 
         $process = Process::timeout($this->config['timeout'])
             ->env($environment)
@@ -146,56 +228,78 @@ class RcloneManager implements RcloneInterface
                     ($this->outputCallback)($type, $buffer);
                 }
                 // @codeCoverageIgnoreEnd
+
+                // Log process output for debugging
+                $this->logger->debug('rclone process output', [
+                    'type' => $type,
+                    'buffer' => Str::trim($buffer),
+                ]);
             });
 
-        return new ProcessResult(
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        $result = new ProcessResult(
             $process->successful(),
             $process->exitCode(),
             $process->output(),
             $process->errorOutput(),
             $this->parseStats($process->errorOutput())
         );
+
+        if ($result->isSuccessful()) {
+            $this->logger->info('rclone operation completed successfully', [
+                'operation' => $operation,
+                'execution_time_ms' => $executionTime,
+                'stats' => $result->getStats(),
+            ]);
+        } else {
+            $this->logger->error('rclone operation failed', [
+                'operation' => $operation,
+                'exit_code' => $result->getExitCode(),
+                'execution_time_ms' => $executionTime,
+                'error_output' => $result->getErrorOutput(),
+            ]);
+        }
+
+        return $result;
     }
 
+    /**
+     * @throws CommandExecutionException
+     */
     protected function buildCommand(string $operation): array
     {
         $binary = $this->config['binary_path'] ?? $this->findRcloneBinary();
 
-        $command = [$binary, $operation];
-
-        // Add base options
-        $command = array_merge($command, $this->config['base_options']);
+        $builder = RcloneCommandBuilder::create($binary, $operation)
+            ->addBaseOptions($this->config['base_options']);
 
         // Add dynamic options
         foreach ($this->options as $key => $value) {
-            switch ($key) {
-                case 'transfers':
-                    $command[] = "--transfers={$value}";
-                    break;
-                case 'checkers':
-                    $command[] = "--checkers={$value}";
-                    break;
-                case 'retries':
-                    $command[] = "--retries={$value}";
-                    break;
-                case 'stat_interval':
-                    $command[] = "--stats={$value}s";
-                    break;
-                case 'progress':
-                    if ($value) {
-                        $command[] = '--progress';
-                    }
-                    break;
-            }
+            $builder->addOption($key, $value);
         }
 
         // Add source and target
-        $command[] = $this->buildDiskPath($this->sourceDisk, $this->sourcePath);
-        $command[] = $this->buildDiskPath($this->targetDisk, $this->targetPath);
+        $source = $this->buildDiskPath($this->sourceDisk, $this->sourcePath);
+        $target = $this->buildDiskPath($this->targetDisk, $this->targetPath);
+
+        $builder->addSourceAndTarget($source, $target);
+
+        $command = $builder->build();
+
+        $this->logger->debug('Built rclone command', [
+            'operation' => $operation,
+            'command' => $command,
+            'source' => $source,
+            'target' => $target,
+        ]);
 
         return $command;
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     protected function buildEnvironment(): array
     {
         $environment = [];
@@ -215,6 +319,9 @@ class RcloneManager implements RcloneInterface
         return $environment;
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     protected function buildDiskEnvironment(string $diskName, array $config): array
     {
         $driver = $config['driver'] ?? 'local';
@@ -225,25 +332,31 @@ class RcloneManager implements RcloneInterface
 
     protected function buildDiskPath(string $diskName, string $path): string
     {
-        return $diskName.':'.ltrim($path, '/');
+        return $diskName.':'.Str::ltrim($path, '/');
     }
 
     protected function normalizePath(string $path): string
     {
-        return '/'.trim($path, '/');
+        return '/'.Str::trim($path, '/');
     }
 
+    /**
+     * @throws CommandExecutionException
+     */
     protected function validateConfiguration(): void
     {
         if (empty($this->sourceDisk)) {
-            throw new RuntimeException('Source disk is required');
+            throw CommandExecutionException::missingDisk('Source');
         }
 
         if (empty($this->targetDisk)) {
-            throw new RuntimeException('Target disk is required');
+            throw CommandExecutionException::missingDisk('Target');
         }
     }
 
+    /**
+     * @throws CommandExecutionException
+     */
     protected function findRcloneBinary(): string
     {
         $paths = [
@@ -262,22 +375,16 @@ class RcloneManager implements RcloneInterface
 
         // Try to find in PATH
         $which = shell_exec('which rclone 2>/dev/null');
-        if ($which && trim($which)) {
-            return trim($which);
+        if ($which && Str::trim($which)) {
+            return Str::trim($which);
         }
         // @codeCoverageIgnoreEnd
 
-        throw new RuntimeException('rclone binary not found. Please install rclone or set binary_path in configuration.'); // @codeCoverageIgnore
+        throw CommandExecutionException::binaryNotFound(); // @codeCoverageIgnore
     }
 
     protected function parseStats(string $output): array
     {
-        return [
-            'transferred_files' => 0,
-            'transferred_bytes' => 0,
-            'errors' => 0,
-            'checks' => 0,
-            'elapsed_time' => 0,
-        ];
+        return StatsParser::parse($output);
     }
 }

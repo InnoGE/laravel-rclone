@@ -2,19 +2,21 @@
 
 namespace InnoGE\LaravelRclone\Providers;
 
+use Illuminate\Support\Str;
 use InnoGE\LaravelRclone\Contracts\ProviderInterface;
-use InvalidArgumentException;
+use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 
 abstract class AbstractProvider implements ProviderInterface
 {
     /**
      * Build environment variables for the given disk configuration.
+     * @throws InvalidConfigurationException
      */
     public function buildEnvironment(string $diskName, array $config): array
     {
         $this->validateConfiguration($config);
 
-        $upperDiskName = strtoupper($diskName);
+        $upperDiskName = Str::upper($diskName);
         $env = [];
 
         $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = $this->getDriver();
@@ -29,12 +31,63 @@ abstract class AbstractProvider implements ProviderInterface
 
     /**
      * Validate the configuration for this provider.
+     * @throws InvalidConfigurationException
      */
     public function validateConfiguration(array $config): void
     {
         if (($config['driver'] ?? null) !== $this->getDriver()) {
-            throw new InvalidArgumentException(
-                "Driver mismatch: expected '{$this->getDriver()}', got '{$config['driver']}'"
+            throw InvalidConfigurationException::driverMismatch(
+                $this->getDriver(),
+                $config['driver'] ?? 'null'
+            );
+        }
+
+        $this->validateProviderSpecificConfiguration($config);
+    }
+
+    /**
+     * Validate provider-specific configuration.
+     * Override this method in concrete providers to add specific validation.
+     */
+    protected function validateProviderSpecificConfiguration(array $config): void
+    {
+        // Default implementation does nothing
+    }
+
+    /**
+     * Validate that required fields are present and not empty.
+     * @throws InvalidConfigurationException
+     */
+    protected function validateRequiredFields(array $config, array $requiredFields): void
+    {
+        foreach ($requiredFields as $field) {
+            if (empty($config[$field])) {
+                throw InvalidConfigurationException::missingField($this->getDriver(), $field);
+            }
+        }
+    }
+
+    /**
+     * Validate that a field is a positive integer within bounds.
+     * @throws InvalidConfigurationException
+     */
+    protected function validateIntegerField(array $config, string $field, int $min = 1, int $max = PHP_INT_MAX): void
+    {
+        if (!isset($config[$field])) {
+            return;
+        }
+
+        $value = $config[$field];
+
+        if (!is_int($value)) {
+            throw InvalidConfigurationException::invalidValue($field, $value, 'integer');
+        }
+
+        if ($value < $min || $value > $max) {
+            throw InvalidConfigurationException::invalidValue(
+                $field,
+                $value,
+                "integer between {$min} and {$max}"
             );
         }
     }
