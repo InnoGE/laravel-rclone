@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -37,9 +39,9 @@ return [
         '--delete-after',
         '--fast-list',
         '--checksum',
-//        '--s3-chunk-size=64M',
-//        '--s3-upload-concurrency=16',
-//        '--low-level-retries=10',
+        //        '--s3-chunk-size=64M',
+        //        '--s3-upload-concurrency=16',
+        //        '--low-level-retries=10',
     ],
 
     /*
