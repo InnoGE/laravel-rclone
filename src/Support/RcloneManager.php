@@ -298,6 +298,7 @@ class RcloneManager implements RcloneInterface
 
             try {
                 $provider = $this->providerRegistry->getProvider($driver);
+
                 return $provider->buildRemotePath($diskName, $path, $config);
             } catch (ProviderNotFoundException $e) {
                 // Fallback to default behavior if provider not found
