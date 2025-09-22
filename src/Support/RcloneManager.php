@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace InnoGE\LaravelRclone\Support;
 
 use Closure;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
 use InnoGE\LaravelRclone\Exceptions\CommandExecutionException;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException;
-use Psr\Log\LoggerInterface;
 
 class RcloneManager implements RcloneInterface
 {
@@ -21,8 +19,6 @@ class RcloneManager implements RcloneInterface
     protected array $filesystemDisks;
 
     protected ProviderRegistry $providerRegistry;
-
-    protected LoggerInterface $logger;
 
     protected string $sourceDisk = '';
 
@@ -40,7 +36,6 @@ class RcloneManager implements RcloneInterface
         array $config = [],
         array $filesystemDisks = [],
         ?ProviderRegistry $providerRegistry = null,
-        ?LoggerInterface $logger = null
     ) {
         $this->config = array_merge([
             'binary_path' => null,
@@ -62,7 +57,6 @@ class RcloneManager implements RcloneInterface
         $this->filesystemDisks = $filesystemDisks;
         $this->options = $this->config['defaults'];
         $this->providerRegistry = $providerRegistry ?? new ProviderRegistry;
-        $this->logger = $logger ?? Log::getFacadeRoot();
     }
 
     public function source(string $disk, string $path = '/'): self
@@ -220,15 +214,6 @@ class RcloneManager implements RcloneInterface
             'RCLONE_CONFIG_BACKUP_PROVIDER' => 'Other',
         ]);
 
-        $startTime = microtime(true);
-
-        $this->logger->info('Starting rclone operation', [
-            'operation' => $operation,
-            'source' => $this->sourceDisk.':'.$this->sourcePath,
-            'target' => $this->targetDisk.':'.$this->targetPath,
-            'timeout' => $this->config['timeout'],
-        ]);
-
         $process = Process::timeout($this->config['timeout'])
             ->env($environment)
             ->run($command, function (string $type, string $buffer) {
@@ -236,40 +221,16 @@ class RcloneManager implements RcloneInterface
                 if ($this->outputCallback) {
                     ($this->outputCallback)($type, $buffer);
                 }
-                // Log process output for debugging
-                $this->logger->debug('rclone process output', [
-                    'type' => $type,
-                    'buffer' => Str::trim($buffer),
-                ]);
                 // @codeCoverageIgnoreEnd
             });
 
-        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
-
-        $result = new ProcessResult(
+        return new ProcessResult(
             $process->successful(),
             $process->exitCode() ?? 1,
             $process->output(),
             $process->errorOutput(),
             $this->parseStats($process->errorOutput())
         );
-
-        if ($result->isSuccessful()) {
-            $this->logger->info('rclone operation completed successfully', [
-                'operation' => $operation,
-                'execution_time_ms' => $executionTime,
-                'stats' => $result->getStats(),
-            ]);
-        } else {
-            $this->logger->error('rclone operation failed', [
-                'operation' => $operation,
-                'exit_code' => $result->getExitCode(),
-                'execution_time_ms' => $executionTime,
-                'error_output' => $result->getErrorOutput(),
-            ]);
-        }
-
-        return $result;
     }
 
     /**
@@ -294,16 +255,7 @@ class RcloneManager implements RcloneInterface
 
         $builder->addSourceAndTarget($source, $target);
 
-        $command = $builder->build();
-
-        $this->logger->debug('Built rclone command', [
-            'operation' => $operation,
-            'command' => $command,
-            'source' => $source,
-            'target' => $target,
-        ]);
-
-        return $command;
+        return $builder->build();
     }
 
     /**

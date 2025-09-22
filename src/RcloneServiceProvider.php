@@ -39,7 +39,6 @@ class RcloneServiceProvider extends ServiceProvider
                 $app['config']->get('rclone', []),
                 $app['config']->get('filesystems.disks', []),
                 $app->make(ProviderRegistry::class),
-                $app->make('log')
             );
         });
 
