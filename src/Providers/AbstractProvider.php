@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace InnoGE\LaravelRclone\Providers;
 
 use Illuminate\Support\Str;

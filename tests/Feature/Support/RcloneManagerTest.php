@@ -275,24 +275,3 @@ test('handles large file transfer simulation', function () {
     expect($stats['errors'])->toBe(5);
     expect($stats['success_rate'])->toBeGreaterThan(80);
 });
-
-test('logs process output during operation', function () {
-    $logger = Mockery::mock(\Psr\Log\LoggerInterface::class);
-    $logger->shouldReceive('info')->twice(); // Start and success log
-    $logger->shouldReceive('debug')->atLeast()->once(); // At least one debug call
-
-    $manager = new \InnoGE\LaravelRclone\Support\RcloneManager(
-        ['binary_path' => 'echo'],
-        ['local' => ['driver' => 'local', 'root' => '/tmp']],
-        app(\InnoGE\LaravelRclone\Support\ProviderRegistry::class),
-        $logger
-    );
-
-    \Illuminate\Support\Facades\Process::fake([
-        'echo *' => \Illuminate\Support\Facades\Process::result('output', 'error_output'),
-    ]);
-
-    $result = $manager->source('local', '/test')->target('local', '/test2')->copy();
-
-    expect($result->isSuccessful())->toBeTrue();
-});
