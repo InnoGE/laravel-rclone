@@ -291,6 +291,20 @@ class RcloneManager implements RcloneInterface
 
     protected function buildDiskPath(string $diskName, string $path): string
     {
+        // Check if we have disk configuration and provider
+        if (isset($this->filesystemDisks[$diskName])) {
+            $config = $this->filesystemDisks[$diskName];
+            $driver = $config['driver'] ?? 'local';
+
+            try {
+                $provider = $this->providerRegistry->getProvider($driver);
+                return $provider->buildRemotePath($diskName, $path, $config);
+            } catch (ProviderNotFoundException $e) {
+                // Fallback to default behavior if provider not found
+            }
+        }
+
+        // Default behavior for providers that don't override buildRemotePath
         return $diskName.':'.Str::ltrim($path, '/');
     }
 

@@ -18,4 +18,10 @@ interface ProviderInterface
      * Validate the configuration for this provider.
      */
     public function validateConfiguration(array $config): void;
+
+    /**
+     * Build the remote path for this provider.
+     * Default implementation returns diskName:path format.
+     */
+    public function buildRemotePath(string $diskName, string $path, array $config): string;
 }

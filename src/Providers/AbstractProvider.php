@@ -77,4 +77,13 @@ abstract class AbstractProvider implements ProviderInterface
     {
         return $config[$key] ?? $default;
     }
+
+    /**
+     * Build the remote path for this provider.
+     * Default implementation returns diskName:path format.
+     */
+    public function buildRemotePath(string $diskName, string $path, array $config): string
+    {
+        return $diskName.':'.Str::ltrim($path, '/');
+    }
 }

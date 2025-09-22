@@ -40,4 +40,26 @@ class S3Provider extends AbstractProvider
 
         return $env;
     }
+
+    /**
+     * Build the remote path for S3, incorporating bucket and root from config.
+     * Format: diskName:bucket/root/path
+     */
+    public function buildRemotePath(string $diskName, string $path, array $config): string
+    {
+        $bucket = $this->getConfigValue($config, 'bucket', '');
+        $root = $this->getConfigValue($config, 'root', '');
+
+        $remotePath = $diskName . ':' . $bucket;
+
+        if (!empty($root)) {
+            $remotePath .= '/' . trim($root, '/');
+        }
+
+        if (!empty($path) && $path !== '/') {
+            $remotePath .= '/' . trim($path, '/');
+        }
+
+        return $remotePath;
+    }
 }

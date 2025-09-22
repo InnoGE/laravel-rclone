@@ -101,3 +101,71 @@ test('builds environment with path style endpoint configuration', function () {
     expect($env2)->toHaveKey('RCLONE_CONFIG_S3_TEST_FORCE_PATH_STYLE');
     expect($env2['RCLONE_CONFIG_S3_TEST_FORCE_PATH_STYLE'])->toBe('false');
 });
+
+test('builds remote path with bucket only', function () {
+    $provider = new S3Provider;
+
+    $config = [
+        'driver' => 's3',
+        'bucket' => 'foobar',
+    ];
+
+    $path = $provider->buildRemotePath('s3_test', 'backups', $config);
+
+    expect($path)->toBe('s3_test:foobar/backups');
+});
+
+test('builds remote path with bucket and root', function () {
+    $provider = new S3Provider;
+
+    $config = [
+        'driver' => 's3',
+        'bucket' => 'foobar',
+        'root' => 'quux',
+    ];
+
+    $path = $provider->buildRemotePath('s3_test', 'backups', $config);
+
+    expect($path)->toBe('s3_test:foobar/quux/backups');
+});
+
+test('builds remote path with bucket and root with trailing slashes', function () {
+    $provider = new S3Provider;
+
+    $config = [
+        'driver' => 's3',
+        'bucket' => 'foobar',
+        'root' => '/quux/',
+    ];
+
+    $path = $provider->buildRemotePath('s3_test', '/backups/', $config);
+
+    expect($path)->toBe('s3_test:foobar/quux/backups');
+});
+
+test('builds remote path with empty path', function () {
+    $provider = new S3Provider;
+
+    $config = [
+        'driver' => 's3',
+        'bucket' => 'foobar',
+        'root' => 'quux',
+    ];
+
+    $path = $provider->buildRemotePath('s3_test', '/', $config);
+
+    expect($path)->toBe('s3_test:foobar/quux');
+});
+
+test('builds remote path without root', function () {
+    $provider = new S3Provider;
+
+    $config = [
+        'driver' => 's3',
+        'bucket' => 'foobar',
+    ];
+
+    $path = $provider->buildRemotePath('s3_test', '/', $config);
+
+    expect($path)->toBe('s3_test:foobar');
+});
