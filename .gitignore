@@ -7,3 +7,4 @@ docs
 phpunit.xml
 phpstan.neon
 vendor
+var

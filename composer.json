@@ -1,11 +1,19 @@
 {
-    "name": "innoge/rclone",
-    "description": "A sleek PHP wrapper around rclone, exposing its full option set for maximum convenience.",
+    "name": "innoge/laravel-rclone",
+    "description": "A sleek PHP wrapper around rclone with Laravel-style fluent API syntax",
     "keywords": [
-        "InnoGE",
-        "rclone"
+        "rclone",
+        "sync",
+        "backup",
+        "storage",
+        "s3",
+        "sftp",
+        "ftp",
+        "cloud",
+        "filesystem",
+        "laravel-style"
     ],
-    "homepage": "https://github.com/innoge/rclone",
+    "homepage": "https://github.com/innoge/laravel-rclone",
     "license": "MIT",
     "authors": [
         {
@@ -15,27 +23,46 @@
         }
     ],
     "require": {
-        "php": "^8.1"
+        "php": "^8.2",
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/process": "^10.0|^11.0|^12.0",
+        "illuminate/filesystem": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
-        "composer/semver": "^3.4",
-        "pestphp/pest": "^2.9|^3.0",
-        "phpstan/extension-installer": "^1.1"
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^8.0|^9.0",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^1.12|^2.0"
     },
     "autoload": {
         "psr-4": {
-            "InnoGE\\Rclone\\": "src/"
+            "InnoGE\\LaravelRclone\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "InnoGE\\Rclone\\Tests\\": "tests/"
+            "InnoGE\\LaravelRclone\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
         "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest --coverage"
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "InnoGE\\LaravelRclone\\RcloneServiceProvider"
+            ],
+            "aliases": {
+                "Rclone": "InnoGE\\LaravelRclone\\Facades\\Rclone"
+            }
+        }
     },
     "config": {
         "sort-packages": true,
