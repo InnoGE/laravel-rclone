@@ -2,7 +2,4 @@
 
 namespace InnoGE\Rclone;
 
-class Rclone
-{
-
-}
+class Rclone {}
