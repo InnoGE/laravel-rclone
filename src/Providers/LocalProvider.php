@@ -2,6 +2,8 @@
 
 namespace InnoGE\LaravelRclone\Providers;
 
+use Illuminate\Support\Str;
+
 class LocalProvider extends AbstractProvider
 {
     public function getDriver(): string
@@ -11,8 +13,13 @@ class LocalProvider extends AbstractProvider
 
     protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
     {
-        return [
-            "RCLONE_CONFIG_{$upperDiskName}_ROOT" => $this->getConfigValue($config, 'root', '/'),
-        ];
+        return [];
+    }
+
+    public function buildRemotePath(string $diskName, string $path, array $config): string
+    {
+        return Str::of($config['root'] ?? '/')
+            ->finish('/')
+            ->append(Str::ltrim($path, '/'));
     }
 }
