@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
@@ -92,6 +90,7 @@ test('buildEnvironment creates proper structure', function () {
 
     expect($env)->toEqual([
         'RCLONE_CONFIG_MY_DISK_TYPE' => 'test',
+        'RCLONE_CONFIG_MY_DISK_PROVIDER' => 'Other',
         'RCLONE_CONFIG_MY_DISK_HOST' => 'example.com',
         'RCLONE_CONFIG_MY_DISK_PORT' => '2222',
     ]);
@@ -119,6 +118,32 @@ test('getConfigValue helper method works', function () {
     expect($provider->testGetConfigValue(['key' => 'value'], 'key'))->toBe('value');
     expect($provider->testGetConfigValue([], 'missing', 'default'))->toBe('default');
     expect($provider->testGetConfigValue([], 'missing'))->toBeNull();
+});
+
+test('obscurePassword returns obscured password', function () {
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+
+        public function testObscurePassword(string $password): string
+        {
+            return $this->obscurePassword($password);
+        }
+    };
+
+    $result = $provider->testObscurePassword('test');
+
+    // Should return some obscured password (either mocked or real rclone)
+    expect($result)->not->toBeEmpty();
+    expect($result)->not->toBe('test'); // Should not be the original password
 });
 
 test('throws exception when driver mismatch occurs', function () {

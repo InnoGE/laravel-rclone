@@ -1,0 +1,30 @@
+name: "Run Code Coverage"
+
+on: [pull_request]
+jobs:
+  code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: curl, mbstring, zip, pdo, sqlite, pdo_sqlite, iconv
+          coverage: pcov
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v2
+
+      - name: Execute tests with Code Coverage
+        timeout-minutes: 10
+        run: vendor/bin/pest --parallel --coverage --min=100

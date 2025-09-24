@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\SftpProvider;
 
@@ -54,13 +52,45 @@ test('builds environment with all configuration values', function () {
         'port' => 2222,
     ]);
 
-    expect($env)->toEqual([
-        'RCLONE_CONFIG_SFTP_TEST_TYPE' => 'sftp',
-        'RCLONE_CONFIG_SFTP_TEST_HOST' => 'sftp.example.com',
-        'RCLONE_CONFIG_SFTP_TEST_USER' => 'testuser',
-        'RCLONE_CONFIG_SFTP_TEST_PASS' => 'testpass',
-        'RCLONE_CONFIG_SFTP_TEST_PORT' => '2222',
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_TYPE', 'sftp');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_HOST', 'sftp.example.com');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_USER', 'testuser');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_PORT', '2222');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_PROVIDER', 'Other');
+
+    // Password should be obscured, so we just check it's not empty and not the original
+    expect($env['RCLONE_CONFIG_SFTP_TEST_PASS'])->not->toBeEmpty();
+    expect($env['RCLONE_CONFIG_SFTP_TEST_PASS'])->not->toBe('testpass');
+});
+
+test('builds environment with key file authentication', function () {
+    $provider = new SftpProvider;
+
+    $env = $provider->buildEnvironment('sftp_test', [
+        'driver' => 'sftp',
+        'host' => 'sftp.example.com',
+        'username' => 'testuser',
+        'key_file' => '/path/to/key',
+        'port' => 2222,
     ]);
+
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_KEY_FILE', '/path/to/key');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_PASS', ''); // Empty password when using key
+});
+
+test('builds environment with private key authentication', function () {
+    $provider = new SftpProvider;
+
+    $env = $provider->buildEnvironment('sftp_test', [
+        'driver' => 'sftp',
+        'host' => 'sftp.example.com',
+        'username' => 'testuser',
+        'private_key' => 'private-key-content',
+        'port' => 2222,
+    ]);
+
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_KEY_PEM', 'private-key-content');
+    expect($env)->toHaveKey('RCLONE_CONFIG_SFTP_TEST_PASS', ''); // Empty password when using key
 });
 
 test('validates authentication throws exception when missing all methods', function () {

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
 use InnoGE\LaravelRclone\Exceptions\CommandExecutionException;
@@ -274,4 +272,50 @@ test('handles large file transfer simulation', function () {
     expect($stats['total_files'])->toBe(1000);
     expect($stats['errors'])->toBe(5);
     expect($stats['success_rate'])->toBeGreaterThan(80);
+});
+
+test('falls back to default path building when provider not found', function () {
+    $manager = app(RcloneInterface::class);
+
+    // Create a mock provider registry
+    $registry = Mockery::mock(\InnoGE\LaravelRclone\Support\ProviderRegistry::class);
+    $registry->shouldReceive('getProvider')
+        ->with('unknown')
+        ->andThrow(new \InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException("Provider for driver 'unknown' not found"));
+
+    // Use reflection to set the private property
+    $reflection = new ReflectionClass($manager);
+    $property = $reflection->getProperty('providerRegistry');
+    $property->setAccessible(true);
+    $property->setValue($manager, $registry);
+
+    // Set filesystem disks property
+    $diskProperty = $reflection->getProperty('filesystemDisks');
+    $diskProperty->setAccessible(true);
+    $diskProperty->setValue($manager, [
+        'unknown_disk' => ['driver' => 'unknown'],
+    ]);
+
+    // Use reflection to call protected buildDiskPath method
+    $method = $reflection->getMethod('buildDiskPath');
+    $method->setAccessible(true);
+
+    $result = $method->invoke($manager, 'unknown_disk', '/test/path');
+
+    // Should fall back to default format
+    expect($result)->toBe('unknown_disk:test/path');
+});
+
+test('falls back to default path building when disk not configured', function () {
+    $manager = app(RcloneInterface::class);
+
+    // Use reflection to call protected buildDiskPath method
+    $reflection = new ReflectionClass($manager);
+    $method = $reflection->getMethod('buildDiskPath');
+    $method->setAccessible(true);
+
+    $result = $method->invoke($manager, 'nonexistent_disk', '/test/path');
+
+    // Should fall back to default format
+    expect($result)->toBe('nonexistent_disk:test/path');
 });

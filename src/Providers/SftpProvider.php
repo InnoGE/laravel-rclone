@@ -29,11 +29,25 @@ class SftpProvider extends AbstractProvider
 
     protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
     {
-        return [
+        $password = $this->getConfigValue($config, 'password', '');
+        $obscuredPassword = $this->obscurePassword($password);
+
+        $env = [
             "RCLONE_CONFIG_{$upperDiskName}_HOST" => $this->getConfigValue($config, 'host', ''),
             "RCLONE_CONFIG_{$upperDiskName}_USER" => $this->getConfigValue($config, 'username', ''),
-            "RCLONE_CONFIG_{$upperDiskName}_PASS" => $this->getConfigValue($config, 'password', ''),
+            "RCLONE_CONFIG_{$upperDiskName}_PASS" => $obscuredPassword,
             "RCLONE_CONFIG_{$upperDiskName}_PORT" => (string) $this->getConfigValue($config, 'port', 22),
         ];
+
+        // Add key-based authentication if configured
+        if (! empty($config['key_file'])) {
+            $env["RCLONE_CONFIG_{$upperDiskName}_KEY_FILE"] = $config['key_file'];
+        }
+
+        if (! empty($config['private_key'])) {
+            $env["RCLONE_CONFIG_{$upperDiskName}_KEY_PEM"] = $config['private_key'];
+        }
+
+        return $env;
     }
 }
