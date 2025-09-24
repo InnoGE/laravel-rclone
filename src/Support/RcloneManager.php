@@ -207,10 +207,7 @@ class RcloneManager implements RcloneInterface
 
         $command = $this->buildCommand($operation);
 
-        $environment = array_merge($this->buildEnvironment(), [
-            'RCLONE_CONFIG_S3_PROVIDER' => 'Other',
-            'RCLONE_CONFIG_BACKUP_PROVIDER' => 'Other',
-        ]);
+        $environment = $this->buildEnvironment();
 
         $process = Process::timeout($this->config['timeout'])
             ->env($environment)
