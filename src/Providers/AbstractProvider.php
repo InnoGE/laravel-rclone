@@ -91,7 +91,7 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
-     * Obscure password using rclone's obscure command
+     * Obscure password using rclone's obscure command.
      */
     protected function obscurePassword(string $password): string
     {
@@ -101,8 +101,8 @@ abstract class AbstractProvider implements ProviderInterface
 
         $result = Process::run(['rclone', 'obscure', $password]);
 
-        if (!$result->successful()) {
-            throw new RuntimeException('Failed to obscure password: ' . $result->errorOutput());
+        if (! $result->successful()) {
+            throw new RuntimeException('Failed to obscure password: '.$result->errorOutput());
         }
 
         return trim($result->output());

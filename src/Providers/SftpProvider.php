@@ -40,11 +40,11 @@ class SftpProvider extends AbstractProvider
         ];
 
         // Add key-based authentication if configured
-        if (!empty($config['key_file'])) {
+        if (! empty($config['key_file'])) {
             $env["RCLONE_CONFIG_{$upperDiskName}_KEY_FILE"] = $config['key_file'];
         }
 
-        if (!empty($config['private_key'])) {
+        if (! empty($config['private_key'])) {
             $env["RCLONE_CONFIG_{$upperDiskName}_KEY_PEM"] = $config['private_key'];
         }
 

@@ -21,5 +21,4 @@ class FtpProvider extends AbstractProvider
             "RCLONE_CONFIG_{$upperDiskName}_PORT" => (string) $this->getConfigValue($config, 'port', 21),
         ];
     }
-
 }
