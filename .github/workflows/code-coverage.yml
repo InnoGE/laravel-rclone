@@ -22,4 +22,4 @@ jobs:
 
       - name: Execute tests with Code Coverage
         timeout-minutes: 10
-        run: php artisan test --parallel --coverage --min=100
+        run: vendor/bin/pest --parallel --coverage --min=100
