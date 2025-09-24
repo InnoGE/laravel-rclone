@@ -39,7 +39,6 @@ class RcloneManager implements RcloneInterface
             'binary_path' => null,
             'timeout' => 3600,
             'base_options' => [
-                '--provider=Other',
                 '--delete-after',
                 '--fast-list',
                 '--checksum',
