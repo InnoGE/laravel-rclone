@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Illuminate\Support\ServiceProvider;
 use InnoGE\LaravelRclone\Contracts\RcloneInterface;
 use InnoGE\LaravelRclone\RcloneServiceProvider;

@@ -42,6 +42,11 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
       - name: Install dependencies
         run: composer update --prefer-dist --no-interaction --no-progress --${{ matrix.stability }}
 

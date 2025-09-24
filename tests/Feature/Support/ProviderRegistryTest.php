@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use InnoGE\LaravelRclone\Exceptions\ProviderNotFoundException;
 use InnoGE\LaravelRclone\Providers\LocalProvider;
 use InnoGE\LaravelRclone\Providers\S3Provider;

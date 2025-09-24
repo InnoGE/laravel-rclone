@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use InnoGE\LaravelRclone\Exceptions\RcloneException;
 
 arch('app')->expect(['dump', 'dd', 'ray'])->not->toBeUsed();

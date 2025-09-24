@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use InnoGE\LaravelRclone\Support\ProcessResult;
 
 test('all getter methods return correct values', function () {

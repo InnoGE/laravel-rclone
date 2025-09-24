@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
@@ -122,7 +121,7 @@ test('getConfigValue helper method works', function () {
     expect($provider->testGetConfigValue([], 'missing'))->toBeNull();
 });
 
-test('obscurePassword returns mocked password successfully', function () {
+test('obscurePassword returns obscured password', function () {
     $provider = new class extends AbstractProvider
     {
         public function getDriver(): string
