@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
@@ -149,7 +148,6 @@ test('obscurePassword returns mocked password successfully', function () {
     expect($result)->not->toBe('test'); // Should not be the original password
 });
 
-
 test('throws exception when driver mismatch occurs', function () {
     $provider = new class extends AbstractProvider
     {
@@ -189,4 +187,3 @@ test('throws exception when driver is null', function () {
     expect(fn () => $provider->validateConfiguration([]))
         ->toThrow(InvalidConfigurationException::class);
 });
-
