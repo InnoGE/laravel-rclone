@@ -42,9 +42,6 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-      - name: Remove larastan from dev dependencies
-        run: composer remove --dev nunomaduro/larastan
-
       - name: Install dependencies
         run: composer update --prefer-dist --no-interaction --no-progress --${{ matrix.stability }}
 
