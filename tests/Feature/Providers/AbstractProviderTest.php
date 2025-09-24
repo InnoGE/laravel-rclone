@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
 use InnoGE\LaravelRclone\Providers\AbstractProvider;
 
@@ -120,6 +121,38 @@ test('getConfigValue helper method works', function () {
     expect($provider->testGetConfigValue(['key' => 'value'], 'key'))->toBe('value');
     expect($provider->testGetConfigValue([], 'missing', 'default'))->toBe('default');
     expect($provider->testGetConfigValue([], 'missing'))->toBeNull();
+});
+
+test('obscurePassword handles rclone command failure', function () {
+    // Fake all processes to return failure
+    Process::fake([
+        '*' => Process::result(
+            output: '',
+            errorOutput: 'rclone obscure failed',
+            exitCode: 1
+        ),
+    ]);
+
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+
+        public function testObscurePassword(string $password): string
+        {
+            return $this->obscurePassword($password);
+        }
+    };
+
+    expect(fn () => $provider->testObscurePassword('test'))
+        ->toThrow(\RuntimeException::class, 'Failed to obscure password: rclone obscure failed');
 });
 
 test('throws exception when driver mismatch occurs', function () {
