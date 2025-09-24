@@ -74,5 +74,4 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('rclone.timeout', 120);
         $app['config']->set('rclone.base_options', ['--dry-run']);
     }
-
 }
