@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InnoGE\LaravelRclone\Tests;
 
+use Illuminate\Support\Facades\Process;
 use InnoGE\LaravelRclone\Facades\Rclone;
 use InnoGE\LaravelRclone\RcloneServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -13,6 +14,22 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Mock rclone commands to avoid dependency on actual rclone binary
+        Process::fake([
+            'rclone obscure *' => Process::result(
+                output: 'mocked_obscured_password_123',
+                exitCode: 0
+            ),
+            'rclone version' => Process::result(
+                output: 'rclone v1.60.1',
+                exitCode: 0
+            ),
+            'rclone *' => Process::result(
+                output: "Transferred: 1024 / 1024 Bytes, 100%, 1.024 kBytes/s, ETA 0s\nTransferred: 5 / 10, 50%\nElapsed time: 1.0s",
+                exitCode: 0
+            ),
+        ]);
 
         // Set up test filesystem configuration
         config()->set('filesystems.disks.s3_test', [

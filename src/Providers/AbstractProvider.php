@@ -102,7 +102,9 @@ abstract class AbstractProvider implements ProviderInterface
         $result = Process::run(['rclone', 'obscure', $password]);
 
         if (! $result->successful()) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException('Failed to obscure password: '.$result->errorOutput());
+            // @codeCoverageIgnoreEnd
         }
 
         return trim($result->output());
