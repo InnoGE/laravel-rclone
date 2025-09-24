@@ -2,6 +2,10 @@
 
 ...
 
+## v1.0.1 - 2025-09-24
+
+**Full Changelog**: https://github.com/InnoGE/laravel-rclone/compare/v1.0.0...v1.0.1
+
 ## v1.0.0 - 2025-09-24
 
 ### New Contributors
