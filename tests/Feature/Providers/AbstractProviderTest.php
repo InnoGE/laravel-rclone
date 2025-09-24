@@ -185,3 +185,75 @@ test('throws exception when driver is null', function () {
     expect(fn () => $provider->validateConfiguration([]))
         ->toThrow(InvalidConfigurationException::class);
 });
+
+test('buildRemotePath creates proper remote path format', function () {
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+    };
+
+    $result = $provider->buildRemotePath('my_disk', 'folder/file.txt', []);
+    expect($result)->toBe('my_disk:folder/file.txt');
+});
+
+test('buildRemotePath handles leading slash in path', function () {
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+    };
+
+    $result = $provider->buildRemotePath('my_disk', '/folder/file.txt', []);
+    expect($result)->toBe('my_disk:folder/file.txt');
+});
+
+test('buildRemotePath handles root path', function () {
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+    };
+
+    $result = $provider->buildRemotePath('my_disk', '/', []);
+    expect($result)->toBe('my_disk:');
+});
+
+test('buildRemotePath handles empty path', function () {
+    $provider = new class extends AbstractProvider
+    {
+        public function getDriver(): string
+        {
+            return 'test';
+        }
+
+        protected function buildProviderSpecificEnvironment(string $upperDiskName, array $config): array
+        {
+            return [];
+        }
+    };
+
+    $result = $provider->buildRemotePath('my_disk', '', []);
+    expect($result)->toBe('my_disk:');
+});
