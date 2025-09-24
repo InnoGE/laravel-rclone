@@ -21,6 +21,7 @@ abstract class AbstractProvider implements ProviderInterface
         $env = [];
 
         $env["RCLONE_CONFIG_{$upperDiskName}_TYPE"] = $this->getDriver();
+        $env["RCLONE_CONFIG_{$upperDiskName}_PROVIDER"] = 'Other';
 
         return array_merge($env, $this->buildProviderSpecificEnvironment($upperDiskName, $config));
     }
