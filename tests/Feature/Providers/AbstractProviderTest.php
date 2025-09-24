@@ -92,6 +92,7 @@ test('buildEnvironment creates proper structure', function () {
 
     expect($env)->toEqual([
         'RCLONE_CONFIG_MY_DISK_TYPE' => 'test',
+        'RCLONE_CONFIG_MY_DISK_PROVIDER' => 'Other',
         'RCLONE_CONFIG_MY_DISK_HOST' => 'example.com',
         'RCLONE_CONFIG_MY_DISK_PORT' => '2222',
     ]);

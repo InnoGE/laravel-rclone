@@ -15,13 +15,15 @@ test('builds environment variables correctly', function () {
         'port' => 2121,
     ]);
 
-    expect($env)->toEqual([
-        'RCLONE_CONFIG_FTP_TEST_TYPE' => 'ftp',
-        'RCLONE_CONFIG_FTP_TEST_HOST' => 'ftp.example.com',
-        'RCLONE_CONFIG_FTP_TEST_USER' => 'testuser',
-        'RCLONE_CONFIG_FTP_TEST_PASS' => 'testpass',
-        'RCLONE_CONFIG_FTP_TEST_PORT' => '2121',
-    ]);
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_TYPE', 'ftp');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_HOST', 'ftp.example.com');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_USER', 'testuser');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_PORT', '2121');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_PROVIDER', 'Other');
+
+    // Password should be obscured, so we just check it's not empty and not the original
+    expect($env['RCLONE_CONFIG_FTP_TEST_PASS'])->not->toBeEmpty();
+    expect($env['RCLONE_CONFIG_FTP_TEST_PASS'])->not->toBe('testpass');
 });
 
 test('uses default values when not specified', function () {
@@ -31,13 +33,12 @@ test('uses default values when not specified', function () {
         'driver' => 'ftp',
     ]);
 
-    expect($env)->toEqual([
-        'RCLONE_CONFIG_FTP_TEST_TYPE' => 'ftp',
-        'RCLONE_CONFIG_FTP_TEST_HOST' => '',
-        'RCLONE_CONFIG_FTP_TEST_USER' => '',
-        'RCLONE_CONFIG_FTP_TEST_PASS' => '',
-        'RCLONE_CONFIG_FTP_TEST_PORT' => '21',
-    ]);
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_TYPE', 'ftp');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_HOST', '');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_USER', '');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_PASS', '');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_PORT', '21');
+    expect($env)->toHaveKey('RCLONE_CONFIG_FTP_TEST_PROVIDER', 'Other');
 });
 
 test('has correct driver name', function () {

@@ -2,9 +2,11 @@
 
 namespace InnoGE\LaravelRclone\Providers;
 
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use InnoGE\LaravelRclone\Contracts\ProviderInterface;
 use InnoGE\LaravelRclone\Exceptions\InvalidConfigurationException;
+use RuntimeException;
 
 abstract class AbstractProvider implements ProviderInterface
 {
@@ -86,5 +88,23 @@ abstract class AbstractProvider implements ProviderInterface
     public function buildRemotePath(string $diskName, string $path, array $config): string
     {
         return $diskName.':'.Str::ltrim($path, '/');
+    }
+
+    /**
+     * Obscure password using rclone's obscure command
+     */
+    protected function obscurePassword(string $password): string
+    {
+        if (empty($password)) {
+            return '';
+        }
+
+        $result = Process::run(['rclone', 'obscure', $password]);
+
+        if (!$result->successful()) {
+            throw new RuntimeException('Failed to obscure password: ' . $result->errorOutput());
+        }
+
+        return trim($result->output());
     }
 }
