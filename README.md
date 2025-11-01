@@ -5,6 +5,7 @@
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue)](https://packagist.org/packages/innoge/laravel-rclone)
 [![Laravel Version](https://img.shields.io/badge/laravel-10.x%7C11.x%7C12.x-orange)](https://packagist.org/packages/innoge/laravel-rclone)
 [![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://packagist.org/packages/innoge/laravel-rclone)
+[![Total Downloads](https://img.shields.io/packagist/dt/innoge/laravel-rclone.svg?style=flat-square)](https://packagist.org/packages/innoge/laravel-rclone)
 
 ## ✨ Features
 
