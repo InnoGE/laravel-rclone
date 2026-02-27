@@ -2,6 +2,10 @@
 
 ...
 
+## v1.1.0 - 2026-02-27
+
+**Full Changelog**: https://github.com/InnoGE/laravel-rclone/compare/v1.1...v1.1.0
+
 ## v1.1 - 2026-02-27
 
 ### What's Changed
